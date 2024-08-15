@@ -5,19 +5,6 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import styled from "styled-components";
 import arrow from "../images/arrow.png";
-import { url } from "inspector";
-
-const NextArrow: React.FC<any> = (props) => (
-  <ArrowBase {...props}>
-    <img src={arrow} alt="Next" />
-  </ArrowBase>
-);
-
-const PrevArrow: React.FC<any> = (props) => (
-  <ArrowBase {...props}>
-    <img src={arrow} alt="Prev" />
-  </ArrowBase>
-);
 
 const SlickSlider: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
@@ -46,6 +33,7 @@ const SlickSlider: React.FC = () => {
   const settings: Settings = {
     dots: false,
     infinite: false,
+    draggable: false,
     speed: 500,
     slidesToShow,
     slidesToScroll,
@@ -58,8 +46,18 @@ const SlickSlider: React.FC = () => {
       }
     },
     afterChange: (current: number) => setCurrentSlide(current),
-    nextArrow: currentSlide >= totalSlides - slidesToShow ? null : <NextArrow />,
-    prevArrow: currentSlide === 0 ? null : <PrevArrow />,
+    nextArrow:
+      currentSlide >= totalSlides - slidesToShow ? null : (
+        <ArrowButton>
+          <img src={arrow} alt="Next" />
+        </ArrowButton>
+      ),
+    prevArrow:
+      currentSlide === 0 ? null : (
+        <ArrowButton>
+          <img src={arrow} alt="Prev" />
+        </ArrowButton>
+      ),
     responsive: [
       {
         breakpoint: 1440,
@@ -69,14 +67,7 @@ const SlickSlider: React.FC = () => {
         },
       },
       {
-        breakpoint: 720,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 2,
-        },
-      },
-      {
-        breakpoint: 480,
+        breakpoint: 768,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
@@ -86,7 +77,7 @@ const SlickSlider: React.FC = () => {
   };
 
   return (
-    <div>
+    <Container>
       <StyledSlider {...settings} ref={sliderRef}>
         {slides.map((slide: SlideData) => (
           <SlideItem key={slide.id}>
@@ -94,26 +85,19 @@ const SlickSlider: React.FC = () => {
               <SlideImage src={slide.imageUrl} alt={slide.title} />
             </SlideImageWrapper>
             <SlideTitle>{slide.title}</SlideTitle>
+            <SlideDate>{slide.date}</SlideDate>
           </SlideItem>
         ))}
       </StyledSlider>
-    </div>
+    </Container>
   );
 };
 
-const ArrowBase = styled.div`
-  display: block;
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: url(${arrow});
+const Container = styled.div`
+  width: 90%;
 
-  img {
-    width: 24px;
-    height: auto;
+  @media (max-width: 479px) {
+    width: 80%;
   }
 `;
 
@@ -135,10 +119,40 @@ const StyledSlider = styled(Slider)`
   .slick-disabled {
     cursor: default;
   }
+
+  .slick-slide {
+    padding: 0 8px;
+    box-sizing: border-box;
+  }
+`;
+
+const ArrowButton = styled.button`
+  top: 50%;
+  z-index: 1;
+  display: block;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::before {
+    content: initial;
+  }
+
+  img {
+    width: 24px;
+    height: auto;
+  }
 `;
 
 const SlideItem = styled.div`
   display: flex;
+`;
+
+const SlideDate = styled.span`
+  font-size: 14px;
 `;
 
 const SlideImageWrapper = styled.div`
@@ -148,11 +162,17 @@ const SlideImageWrapper = styled.div`
 
 const SlideImage = styled.img`
   height: auto;
+  width: 100%;
+  margin: 0 auto; /* 중앙 정렬을 위해 margin을 자동으로 설정 */
 `;
 
 const SlideTitle = styled.h3`
   font-size: 24px;
   color: #333;
+  margin: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 `;
 
 export default SlickSlider;

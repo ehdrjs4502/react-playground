@@ -19,14 +19,19 @@ function App() {
 }
 
 const Wrapper = styled.div`
-  width: 100%; /* 기본값으로 작은 화면에서는 전체 너비 */
-  max-width: 1200px;
-  @media (max-width: 720px) {
-    width: 600px; /* 768px 이상의 화면에서는 600px 고정 */
+  max-width: 1300px;
+  padding: 0px 48px 76px 48px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    width: 500px;
+    padding: 40px 20px;
   }
 
   @media (max-width: 479px) {
-    width: 400px; /* 768px 이상의 화면에서는 600px 고정 */
+    width: 400px;
   }
   margin: 0 auto; /* 중앙 정렬을 위해 margin을 자동으로 설정 */
 `;
