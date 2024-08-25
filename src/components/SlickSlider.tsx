@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import Slider, { Settings } from "react-slick";
 import { slides, SlideData } from "../data";
 import "slick-carousel/slick/slick.css";
@@ -7,27 +7,26 @@ import styled from "styled-components";
 import arrow from "../images/arrow.png";
 
 const SlickSlider: React.FC = () => {
-  const [currentSlide, setCurrentSlide] = useState<number>(0);
-  const [slidesToShow, setSlidesToShow] = useState<number>(3);
-  const slidesToScroll = 3;
-  const totalSlides = slides.length;
   const sliderRef = useRef<Slider>(null);
+  const currentSlideRef = useRef<number>(0);
+  const nextArrowRef = useRef<HTMLButtonElement>(null);
+  const prevArrowRef = useRef<HTMLButtonElement>(null);
+  const totalSlides = slides.length;
+
+  const updateArrowVisibility = (currentSlide: number, slidesToShow: number) => {
+    if (nextArrowRef.current) {
+      nextArrowRef.current.style.display = currentSlide >= totalSlides - slidesToShow ? "none" : "block";
+    }
+    if (prevArrowRef.current) {
+      prevArrowRef.current.style.display = currentSlide === 0 ? "none" : "block";
+    }
+  };
 
   useEffect(() => {
-    const updateSlidesToShow = () => {
-      if (sliderRef.current) {
-        const slickInstance = sliderRef.current.innerSlider;
-        setSlidesToShow(slickInstance.props.slidesToShow);
-      }
-    };
-
-    updateSlidesToShow(); // 초기 실행
-
-    window.addEventListener("resize", updateSlidesToShow); // 윈도우 크기 변경 감지
-
-    return () => {
-      window.removeEventListener("resize", updateSlidesToShow); // 이벤트 리스너 제거
-    };
+    if (sliderRef.current) {
+      const slidesToShow = sliderRef.current.innerSlider.props.slidesToShow;
+      updateArrowVisibility(currentSlideRef.current, slidesToShow);
+    }
   }, []);
 
   const settings: Settings = {
@@ -35,29 +34,29 @@ const SlickSlider: React.FC = () => {
     infinite: false,
     draggable: false,
     speed: 500,
-    slidesToShow,
-    slidesToScroll,
+    slidesToShow: 3,
+    slidesToScroll: 1,
     arrows: true,
     beforeChange: (current: number, next: number) => {
-      setCurrentSlide(next);
+      currentSlideRef.current = next;
+    },
+    afterChange: (current: number) => {
       if (sliderRef.current) {
-        const slickInstance = sliderRef.current.innerSlider;
-        setSlidesToShow(slickInstance.props.slidesToShow);
+        const slidesToShow = sliderRef.current.innerSlider.props.slidesToShow;
+        currentSlideRef.current = current;
+        updateArrowVisibility(currentSlideRef.current, slidesToShow);
       }
     },
-    afterChange: (current: number) => setCurrentSlide(current),
-    nextArrow:
-      currentSlide >= totalSlides - slidesToShow ? null : (
-        <ArrowButton>
-          <img src={arrow} alt="Next" />
-        </ArrowButton>
-      ),
-    prevArrow:
-      currentSlide === 0 ? null : (
-        <ArrowButton>
-          <img src={arrow} alt="Prev" />
-        </ArrowButton>
-      ),
+    nextArrow: (
+      <ArrowButton ref={nextArrowRef}>
+        <img src={arrow} alt="Next" />
+      </ArrowButton>
+    ),
+    prevArrow: (
+      <ArrowButton ref={prevArrowRef}>
+        <img src={arrow} alt="Prev" />
+      </ArrowButton>
+    ),
     responsive: [
       {
         breakpoint: 1440,
@@ -92,6 +91,10 @@ const SlickSlider: React.FC = () => {
     </Container>
   );
 };
+
+export default SlickSlider;
+
+// Styled Components
 
 const Container = styled.div`
   width: 90%;
@@ -129,7 +132,6 @@ const StyledSlider = styled(Slider)`
 const ArrowButton = styled.button`
   top: 50%;
   z-index: 1;
-  display: block;
   cursor: pointer;
   width: 24px;
   height: 24px;
@@ -163,7 +165,7 @@ const SlideImageWrapper = styled.div`
 const SlideImage = styled.img`
   height: auto;
   width: 100%;
-  margin: 0 auto; /* 중앙 정렬을 위해 margin을 자동으로 설정 */
+  margin: 0 auto;
 `;
 
 const SlideTitle = styled.h3`
@@ -174,5 +176,3 @@ const SlideTitle = styled.h3`
   text-overflow: ellipsis;
   overflow: hidden;
 `;
-
-export default SlickSlider;
